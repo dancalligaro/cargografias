@@ -1,23 +1,17 @@
 {
-  "name": "cargografias-runner",
-  "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "name": "vagrant",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "start": "node app.js"
+    "start": "node ./bin/www"
   },
   "dependencies": {
-    "compression": "~1.0.11",
-    "express": "~4.8.5"
-  },
-  "devDependencies": {},
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/cargografias/cargografias"
-  },
-  "author": "",
-  "license": "BSD-2-Clause",
-  "bugs": {
-    "url": "https://github.com/cargografias/cargografias/issues"
+    "body-parser": "~1.10.2",
+    "cookie-parser": "~1.3.3",
+    "debug": "~2.1.1",
+    "ejs": "~2.2.3",
+    "express": "~4.11.1",
+    "morgan": "~1.5.1",
+    "serve-favicon": "~2.2.0"
   }
 }

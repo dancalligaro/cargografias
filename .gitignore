@@ -9,6 +9,8 @@
 /dist
 /tags
 node_modules
+.vagrant
+npm-debug.log
 
 # OS generated files #
 ######################
