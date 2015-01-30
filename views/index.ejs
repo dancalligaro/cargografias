@@ -14,17 +14,26 @@
   </head>
   <body ng-controller="MainCtrl">
 
-  <h1>Cargografías Creator</h1>
+    <h1>Cargografías Creator</h1>
 
-<div class="form-group">
-    <label for="cargoName">New carografías name:</label>
-	<div class="input-group">
-		<div class="input-group-addon">cargografias.org/</div>
-		<input id="cargoName" type="text" ng-model="cargoName" class="form-control" placeholder="">
+    <div class="form-group">
+        <label for="cargoName">New carografías name:</label>
+      	<div class="input-group">
+        	<div class="input-group-addon">cargografias.org/</div>
+        	<input id="cargoName" type="text" ng-model="cargoName" class="form-control" placeholder="">
+        </div>
+
+        <label for="popitInstance">Popit instance:</label>
+        <div class="input-group">
+          <input id="popitInstance" type="text" ng-model="popitInstance" class="form-control" placeholder="">
+          <div class="input-group-addon">.popit.mysociety.org</div>
+        </div>
+
     </div>
-  </div>
-  <button type="submit" ng-click="sendCreate()" class="btn btn-primary">Create custom cargografías</button>
+
+    <button type="submit" ng-click="sendCreate()" class="btn btn-primary">Create custom cargografías</button>
 
   	<script type="text/javascript" src="/javascripts/main.js"></script>
+
   </body>  
 </html>

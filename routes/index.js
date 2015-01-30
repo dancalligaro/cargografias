@@ -10,10 +10,10 @@ router.get('/', function(req, res, next) {
 router.post('/api/create', function(req, res) {
   
   var instanceName = req.body.name;
-  var popitUrl = req.body.popitUrl;
+  var popitUrl = req.body.popitInstance;
 
   popitService.createAndUploadIntance(instanceName, popitUrl)
-  	.then(function(){
+  	.then(function(persons){
 		res.send('ok, created ' + req.body.name);
 	}).catch(function(){
 		res.send('error creating instance' + req.body.name);

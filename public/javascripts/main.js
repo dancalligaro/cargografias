@@ -1,15 +1,16 @@
 var cargoApp = angular.module('cargoApp', []);
 
 cargoApp.controller('MainCtrl', [
+
 	'$scope', '$http', '$timeout',
+
 	function ($scope, $http, $timeout){
 	
 	$scope.sendCreate = function(){
 
-		console.log('creating');
-		
 		$http.post('/api/create', {
-			name: $scope.cargoName
+			name: $scope.cargoName, 
+			popitInstance: $scope.popitInstance
 		}).then(function(res){
 			console.log('ok', res);
 		}).catch(function(err){
@@ -18,4 +19,4 @@ cargoApp.controller('MainCtrl', [
 
 	};
 
-}])
+}]);
