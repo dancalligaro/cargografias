@@ -15,12 +15,32 @@ router.post('/api/create', function(req, res) {
   var popitUrl = req.body.popitInstance;
 
   popitService.createAndUploadIntance(instanceName, popitUrl)
-  	.then(function(persons){
+  	.then(function(instance){
 		res.send('ok, created ' + req.body.name);
-	}).catch(function(){
-		res.send('error creating instance' + req.body.name);
+	}).catch(function(error){
+		res.send('error creating instance' + req.body.name + "\n" + error);
 	});
 
+});
+
+
+router.get('/api/createstatus/:instancename', function(req, res){
+
+	req.params.instancename;
+	//holis
+
+});
+
+router.get('/api/instances', function(req,res){
+	popitService.getAllInstances()
+	.then(function(list){
+		res.send(list);
+		console.log(list);
+	})
+	.catch(function(error){
+		res.send(error);
+		console.log('error', error);
+	})
 });
 
 router.get('/api/time', function(req, res){
