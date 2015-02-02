@@ -27,8 +27,6 @@ var currentBuilds = {};
 var buildQueue = [];
 var currentProcessing = null;
 
-createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
-
 function createAndUploadIntance(instanceName, popitUrl){
 
 	var deferred = Q.defer();
@@ -108,6 +106,8 @@ function addToBuildQueue(cargoInstance){
 
 function processNext(){
 
+	console.log('queue length', buildQueue.length)
+
 	if(!currentProcessing){
 		currentProcessing = buildQueue.shift();
 		if(currentProcessing){
@@ -119,8 +119,12 @@ function processNext(){
 
 				})
 				.finally(function(){
+					console.log('checking if there is a new one')
+					currentProcessing = null;
 					setTimeout(processNext, 100);
 				});			
+		}else{
+			console.log('nothing else to process')
 		}
 	}
 
@@ -170,6 +174,7 @@ function processInstance(instance){
 		instance.progressLog.push(message);
 	}).then(function(){
 		instance.progressLog.push('All files uploaded');
+		deferred.resolve();
 	});
 
 	return deferred.promise;
@@ -236,6 +241,7 @@ function uploadFilesToServer(instanceName, persons, organizations, posts, member
 					                			uploadFile(files.shift());
 					                		},1)
 					                	}else{
+					                		console.log('resolving deferred uploding files')
 					                		deferred.notify('everything uploaded');
 					                		deferred.resolve();
 					                		sftp.end();
@@ -292,6 +298,21 @@ function uploadFilesToServer(instanceName, persons, organizations, posts, member
 	})
 
 */
+
+// TEsting create a random intsance
+createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
+
+// Testing enqueing
+setTimeout(function(){
+	createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
+}, 500);
+
+setTimeout(function(){
+	createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
+}, 1000);
+
+
+//createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
 
 
 
