@@ -299,17 +299,18 @@ function uploadFilesToServer(instanceName, persons, organizations, posts, member
 
 */
 
-// TEsting create a random intsance
-createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
 
-// Testing enqueing
-setTimeout(function(){
-	createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
-}, 500);
+// // TEsting create a random intsance
+// createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
 
-setTimeout(function(){
-	createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
-}, 1000);
+// // Testing enqueing
+// setTimeout(function(){
+// 	createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
+// }, 500);
+
+// setTimeout(function(){
+// 	createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
+// }, 1000);
 
 
 //createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
