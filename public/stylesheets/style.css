@@ -6,3 +6,16 @@ body {
 a {
   color: #00B7FF;
 }
+
+.container{
+	max-width: 730px;
+	margin: 0 auto;
+}
+
+.form-wrap{
+	padding: 0 80px;
+}
+.btn-container{
+	margin-top: 60px;
+	text-align: center;
+}

@@ -14,28 +14,41 @@
   </head>
   <body ng-controller="MainCtrl">
 
-    <h1>Cargografías Creator</h1>
+    <div class="container">
+        
+      <div class="jumbotron">
+        <h1>Cargografías Creator</h1>
+      </div>
 
-    <div class="form-group">
-        <label for="cargoName">New carografías name:</label>
-      	<div class="input-group">
-        	<div class="input-group-addon">cargografias.org/</div>
-        	<input id="cargoName" type="text" ng-model="cargoName" class="form-control" placeholder="">
+      <div class="form-wrap">
+        <div class="form-group">
+            <label for="cargoName">New carografías name:</label>
+            <div class="input-group">
+              <div class="input-group-addon input-lg">cargografias.org/</div>
+              <input id="cargoName" type="text" ng-model="cargoName" class="input-lg form-control" placeholder="">
+            </div>
+
+            <br>
+
+            <label for="popitInstance">Popit instance:</label>
+            <div class="input-group">
+              <input id="popitInstance" type="text" ng-model="popitInstance" class="input-lg form-control" placeholder="">
+              <div class="input-group-addon input-lg">.popit.mysociety.org</div>
+            </div>
+
         </div>
+      </div>
 
-        <label for="popitInstance">Popit instance:</label>
-        <div class="input-group">
-          <input id="popitInstance" type="text" ng-model="popitInstance" class="form-control" placeholder="">
-          <div class="input-group-addon">.popit.mysociety.org</div>
-        </div>
+      <div class="btn-container">
+        <button type="submit" ng-click="sendCreate()" class="btn btn-lg btn-primary">Create custom cargografías</button>  
+      </div>
+      
 
-    </div>
+      <ul>
+        <li ng-repeat="line in responseLines">{{line}}</li>
+      </ul>
 
-    <button type="submit" ng-click="sendCreate()" class="btn btn-primary">Create custom cargografías</button>
-
-    <ul>
-      <li ng-repeat="line in responseLines">{{line}}</li>
-    </ul>
+    </div> <!-- container -->
 
   	<script type="text/javascript" src="/javascripts/main.js"></script>
 
