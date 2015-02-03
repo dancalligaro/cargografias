@@ -73,9 +73,17 @@ function getBuildStatus(instanceName){
 	return deferred.promise;	
 }
 
-function getCurrentInstanceProgress(){
+function getInstanceProgress(instanceName){
 	var deferred = Q.defer();
-	deferred.resolve( (currentProcessing && currentProcessing.progressLog) ? currentProcessing.progressLog : [] );
+
+	console.log( 'here ', instanceName, currentBuilds[instanceName])
+
+	if(currentBuilds[instanceName]){
+		deferred.resolve( currentBuilds[instanceName].progressLog )
+	}else{
+		deferred.resolve( );
+	}
+
 	return deferred.promise;
 }
 
@@ -150,14 +158,16 @@ function processInstance(instance){
 			deferred.reject({error: error});
 		}else{
 			if ( response.statusCode == 200 ){
-				uploadFilesToServer(instance.name, body).then(function(){
+				uploadFilesToServer(instance.name, body).progress(function(msg){
+					instance.progressLog.push(msg);
+				}).then(function(){
 					deferred.resolve();
 				}).catch(function(){
 					deferred.reject('error uploading file');
 				});
 			} else if (response.statusCode == 404 ){
-				console.log('error requesting file', url);
-				instance.progressLog.push('error requesting file ' + url);
+				console.log('404 not found', url);
+				instance.progressLog.push('404 not found ' + url);
 				deferred.reject({ code: response.statusCode, error: error});
 			} else {
 				console.log('error requesting file', url);
@@ -288,7 +298,7 @@ function uploadFilesToServer(instanceName, data){
 
 
 // // TEsting create a random intsance
- createAndUploadIntance("holaquetal" + (+ new Date()), "cargografias");
+// createAndUploadIntance("holaquetal" + (+ new Date()), "cargograssfias");
 
 // // Testing enqueing
 // setTimeout(function(){
@@ -305,7 +315,7 @@ function uploadFilesToServer(instanceName, data){
 module.exports = {
 	createAndUploadIntance: createAndUploadIntance, 
 	getAllInstances: getAllInstances, 
-	getCurrentInstanceProgress: getCurrentInstanceProgress
+	getInstanceProgress: getInstanceProgress
 };
 
 

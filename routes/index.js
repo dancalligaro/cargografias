@@ -2,8 +2,6 @@ var express = require('express');
 var router = express.Router();
 var popitService = require('../service/popit.js')
 
-var counter = 0;
-
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
@@ -16,22 +14,50 @@ router.post('/api/create', function(req, res) {
 
   popitService.createAndUploadIntance(instanceName, popitUrl)
   	.then(function(instance){
-		res.send('ok, created ' + req.body.name);
+		res.send({
+			status: 'ok', 
+			message: 'enqueued ' + req.body.name
+		});
 	}).catch(function(error){
-		res.send('error creating instance' + req.body.name + "\n" + error);
+		res.send({
+			status: 'error', 
+			message: 'error creating instance' + req.body.name + "\n" + error
+		});
 	});
 
 });
 
 
 router.get('/api/createstatus/:instancename', function(req, res){
+	
+	var instanceName = req.params.instancename;
 
-	req.params.instancename;
-	//holis
+	popitService.getBuildStatus(instanceName).then(function(status){
+		res.send({
+			status: 'ok', 
+			message: status
+		})
+	})
+
+});
+
+router.get('/api/currentbuildstatus/:instancename', function(req, res){
+
+	console.log(req.params, req.params.instancename);
+
+	var instanceName = req.params.instancename;
+
+	popitService.getInstanceProgress(instanceName).then(function(log){
+		res.send({
+			status: 'ok', 
+			log: log
+		});
+	});
 
 });
 
 router.get('/api/instances', function(req,res){
+
 	popitService.getAllInstances()
 	.then(function(list){
 		res.send(list);
@@ -43,12 +69,5 @@ router.get('/api/instances', function(req,res){
 	})
 });
 
-router.get('/api/time', function(req, res){
-	res.send({ status : counter});
-});
-
-setInterval(function(){
-	counter += 1;
-}, 1000);
 
 module.exports = router;
