@@ -1,9 +1,9 @@
-var Toolkit = require('popit-toolkit');
 var Q = require('q');
 var fs = require('fs');
 var mongoose = require('mongoose');
 var ssh2 = require('ssh2');
 var zlib = require('zlib');
+var request = require('request');
 
 require('dotenv').load();
 
@@ -137,59 +137,47 @@ function processInstance(instance){
 	var deferred = Q.defer();
 	var persons, organizations, posts, memberships;
 
-	toolkit = Toolkit({
-		host: instance.popitUrl + ".popit.mysociety.org"
-	});
-
 	instance.progressLog = [];
 	instance.progressLog.push('Loading Persons...')
 
-	toolkit.loadAllItems('persons').then(function(_persons){
-		console.log(_persons.length + ' persons loaded.')
-		instance.progressLog.push(_persons.length + ' persons loaded.')		
-		instance.progressLog.push('Loading Organizations...')		
-		persons = _persons;
-		return toolkit.loadAllItems('organizations');
-	}).progress(function(status){
-		console.log(status);
-	}).then(function(_organizations){
-		console.log(_organizations.length + ' organizations loaded.')
-		instance.progressLog.push(_organizations.length + ' organizations loaded.')		
-		instance.progressLog.push('Loading Posts...')		
-		organizations = _organizations;
-		return toolkit.loadAllItems('posts');
-	}).then(function(_posts){
-		console.log(_posts.length + ' posts loaded.')
-		instance.progressLog.push(_posts.length + ' posts loaded.')		
-		instance.progressLog.push('Loading Memberships...')		
-		posts = _posts;
-		return toolkit.loadAllItems('memberships');
-	}).then(function(_memberships){
-		console.log(_memberships.length + ' memberships loaded.')
-		instance.progressLog.push(_memberships.length + ' memberships loaded.')
-		memberships = _memberships;
-		console.log('ready to upload');
-		return uploadFilesToServer(instance.name, persons, organizations, posts, memberships);
-	}).progress(function(message){
-		instance.progressLog.push(message);
-	}).then(function(){
-		instance.progressLog.push('All files uploaded');
-		deferred.resolve();
-	});
+	var url = 'http://' + instance.popitUrl + '.popit.mysociety.org/api/v0.1/export.json';
+
+	request(url, function (error, response, body) {
+		
+		if( error ){
+			console.log('error requesting file', url);
+			instance.progressLog.push('error requesting file ' + url);
+			deferred.reject({error: error});
+		}else{
+			if ( response.statusCode == 200 ){
+				uploadFilesToServer(instance.name, body).then(function(){
+					deferred.resolve();
+				}).catch(function(){
+					deferred.reject('error uploading file');
+				});
+			} else if (response.statusCode == 404 ){
+				console.log('error requesting file', url);
+				instance.progressLog.push('error requesting file ' + url);
+				deferred.reject({ code: response.statusCode, error: error});
+			} else {
+				console.log('error requesting file', url);
+				instance.progressLog.push('error requesting file ' + url);
+				deferred.reject({ code: response.statusCode, error: error});
+			}
+		}
+
+	})
 
 	return deferred.promise;
 
 }
 
-function uploadFilesToServer(instanceName, persons, organizations, posts, memberships){
+function uploadFilesToServer(instanceName, data){
 	
 	var deferred = Q.defer();
 	var conn = new ssh2();
 	var files = [
-		{name: 'persons.json', file: persons}, 
-		{name: 'organizations.json', file: organizations},
-		{name: 'posts.json', file: posts},
-		{name: 'memberships.json', file: memberships}
+		{name: 'data.json', file: data}
 	];
 
 	conn.on(
@@ -218,7 +206,7 @@ function uploadFilesToServer(instanceName, persons, organizations, posts, member
 		 
 		                function uploadFile(file){
 	
-							zlib.gzip( JSON.stringify(file.file), function (error, result) {
+							zlib.gzip( file.file, function (error, result) {
 								
 								if(error){
 									console.log('- error gzipping file', file.name)
@@ -288,20 +276,19 @@ function uploadFilesToServer(instanceName, persons, organizations, posts, member
 	return deferred.promise;
 };
 
+
 //Testing upload to server;
 
 /*
-
 	uploadFilesToServer('juanita', "['a', 'b']", "['a', 'b']", "['a', 'b']", "['a', 'b']").then(function(){
 		console.log("=====================================");
 		uploadFilesToServer('papapapa', "['a', 'b']", "['a', 'b']", "['a', 'b']", "['a', 'b']")
 	})
-
 */
 
 
 // // TEsting create a random intsance
-// createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
+ createAndUploadIntance("holaquetal" + (+ new Date()), "cargografias");
 
 // // Testing enqueing
 // setTimeout(function(){
@@ -312,10 +299,7 @@ function uploadFilesToServer(instanceName, persons, organizations, posts, member
 // 	createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
 // }, 1000);
 
-
 //createAndUploadIntance("lalala" + (+ new Date()), "cargografias");
-
-
 
 
 module.exports = {
@@ -323,4 +307,5 @@ module.exports = {
 	getAllInstances: getAllInstances, 
 	getCurrentInstanceProgress: getCurrentInstanceProgress
 };
-	
+
+
