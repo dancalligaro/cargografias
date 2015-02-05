@@ -3,12 +3,13 @@ var wid, hei;
 var transitionDuration = 800;
 
 var data = [];
+var posts = [];
 var scales = {};
 var totals = {};
 
 var vis;
 var padding = { top: 40, right: 140, bottom: 30, left: 30 }
-var barHeight = 10; 
+var barHeight = 20; 
 var defaultPopPercent = .08;
 
 var controls = {
@@ -41,12 +42,11 @@ $(document).ready(function() {
       }
     }
 
-    // sort + totals -- not in processData because we only need to do it once
     
-    data.sort(function(a, b) { return d3.ascending(a.Start, b.Start); });
     
-    totals.area = d3.sum(data, function(d) { return d.Land_area_million_km2; });
-    totals.population = d3.sum(data, function(d) { return d.Estimated_Population; });
+    totals.area = d3.sum(data, function(d) { return d3.sum(d.posts, function(p){ return p.Land_area_million_km2; }) });
+    totals.population = d3.sum(data, function(d) { return d3.sum(d.posts, function(p){ return p.Estimated_Population; }) });
+    
     totals.popPercent = d3.sum(data, function(d) { 
       if (isNaN(d.Percent_World_Population)) return defaultPopPercent;
       else return d.Percent_World_Population; 
@@ -55,13 +55,14 @@ $(document).ready(function() {
     // process data for scales, etc.
     processData();
 
-    //console.log(data);
-    drawStarting();
+    
+    drawstarting();
     addInteractionEvents();
     
     setTimeout(function() {
       setControl($("#controls #layoutControls #layout-timeline"), "display", "timeline", false);
-      setControl($("#controls #heightControls #height-area"), "height", "area", true);
+      setControl($("#controls #heightControls #height-area"), "height", "contiguous", true);
+      setControl($("#controls #groupControls #group-name"), "group", "name", true);
     }, 500);
   
   });
@@ -92,12 +93,19 @@ function processData() {
 
     barHeight = (hei - padding.top - padding.bottom) / data.length;
     
+    
     scales.years = d3.scale.linear()
-      .domain([ d3.min(data, function(d) { return d.Start; }), d3.max(data, function(d) { return d.End; }) ])
+      .domain([ 
+        d3.min(data, function(d) {  return d3.min(d.posts, function(inner) { return inner.start; }) }),
+        d3.max(data, function(d) {  return d3.max(d.posts, function(inner) { return inner.end;   }) })
+        ])
       .range([ padding.left, wid - padding.right ]);
-  
+    
+
+
+    var totalPosts = d3.sum(data, function(d){return d.posts.length});
     scales.indexes = d3.scale.linear()
-      .domain([ 0, data.length - 1 ])
+      .domain([ 0,  totalPosts- 1 ])
       .range([ padding.top, hei - padding.bottom - barHeight ]);
       
     scales.areas = function(a) {
@@ -112,25 +120,55 @@ function processData() {
       var range = hei - padding.top - padding.bottom;
       return range * percentage;
     }
-    
-    // calculate ordering items
-    
-    var y_area = padding.top;
-    for(i = 0; i < data.length; i++) {
-      d = data[i];
-      d.area_y = y_area;
-      y_area += scales.areas(d.Land_area_million_km2);
-    }
 
+   //find all other posts by region and province
+   //TODO: Replace for a proper group
+   //var posts = data.map(function(d) { return d.posts.map( function(z){ return z.name + "-" + z.type }); })
+   posts = ["Presidente-nacional", "Gobernador-provincial", "Intendente-municipal", "Diputado-nacional"];
+
+    // calculate ordering items
+    var y_area = padding.top;
+    // Height
     var y_popPercent = padding.top;
     for(i = 0; i < data.length; i++) {
-      d = data[i];
-      d.popPercent_y = y_popPercent;
-      
-      if (isNaN(d.Percent_World_Population)) y_popPercent += scales.popPercents(defaultPopPercent);
-      else y_popPercent += scales.popPercents(d.Percent_World_Population);
+
+      //Check sort by date 
+      d = data[i].posts = data[i].posts.sort(function(a, b){ return d3.ascending(a.start, b.start); });
+      console.log(d);
+      //Ordenar.
+      for (var j = 0; j < d.length; j++) {
+        d[j].area_y = y_area;
+        
+        y_area += scales.areas(d[j].Land_area_million_km2);
+
+        d[j].popPercent_y = y_popPercent;
+        if (isNaN(d[j].Percent_World_Population)) y_popPercent += scales.popPercents(defaultPopPercent);
+        else y_popPercent += scales.popPercents(d[j].Percent_World_Population);
+
+        d[j].parent = i;
+        d[j].position = j;
+        //Post Position
+        
+        d[j].postsPosition = posts.indexOf(d[j].name + "-" + d[j].region);
+
+
+        //Save previous year reference to be uses on carrear compare
+
+        if (j -1 >=0){
+          d[j].pre = d[j-1];
+        }
+        else{
+         d[j].pre = {start:0, pre:0, tx:0} ;
+        }
+
+
+      };
+
+
     }
+
     
+
 
 }
 
@@ -138,7 +176,7 @@ function processData() {
  * Initial rendering of the vis
  ***********************************************************/
 
-function drawStarting() {
+function drawstarting() {
 
   // background
   vis.append("svg:rect")
@@ -161,39 +199,58 @@ function drawStarting() {
   // empire containers
   vis.selectAll("g")
     .data(data)
-    .enter().append("svg:g")
-      .attr("class", "barGroup")
-      .attr("index", function(d, i) { return i; })
-      .attr("transform", function(d, i) { return "translate(" + padding.left + ", " + scales.indexes(i) + ")"; });
+    .enter()
+    .append("svg:g")
+      .each(function(politician, j){
 
-  // bars
-  vis.selectAll("g.barGroup")
-    .append("svg:rect")
-      .attr("class", function(d) { return "bar " + d.type  + " " + d.region})
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", function(d) { return scales.years(d.End) - scales.years(d.Start); })
-      .attr("height", barHeight);
+        var posts = d3.select(this)
+        .selectAll('g')
+        .data(politician.posts);
+        
+        posts.enter()
+        .append("svg:g")
+        .attr("class", "barGroup")
+        .attr("index", function(d, i) { return j; })
+        //.attr("transform", function(d, i) { return "translate(" + padding.left + ", " + scales.indexes(  pos(politician.posts,j,i)) + ")"; })
+        .attr("transform", function(d, i) { return "translate(" + (i*100) + ", " + (j*barHeight) + ")"; })
+        .append("svg:rect")
+        .attr("class", function(d) { return "bar " + d.type  + " " + d.region})
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", function(d) { return scales.years(d.end) - scales.years(d.start); })
+        .attr("height", barHeight)
+         // peak lines    
+        .selectAll("g.barGroup")
+        .append("svg:line")
+        .attr("class", "peakLine")
+        .attr("x1", function(d) { return scales.years(d.Peak) - scales.years(d.start); })
+        .attr("x2", function(d) { return scales.years(d.Peak) - scales.years(d.start); })
+        .attr("y1", 0)
+        .attr("y2", barHeight);
 
-  // peak lines
-  vis.selectAll("g.barGroup")
-    .append("svg:line")
-      .attr("class", "peakLine")
-      .attr("x1", function(d) { return scales.years(d.Peak) - scales.years(d.Start); })
-      .attr("x2", function(d) { return scales.years(d.Peak) - scales.years(d.Start); })
-      .attr("y1", 0)
-      .attr("y2", barHeight);
+
+
+
+
+      })
+     
+
+      
+
+  
+  
 
   // bar labels
   vis.selectAll("g.barGroup")
     .append("svg:text")
       .attr("class", "barLabel")
-      .attr("x", function(d) { return scales.years(d.End) - scales.years(d.Start); })
+      .attr("x", function(d) { 
+        return scales.years(d.end) - scales.years(d.start); })
       .attr("y", 0)
       .attr("dx", 5)
       .attr("dy", ".35em")
       .style("fill", function(d) { if (d.Contiguous === false) return "#0ff"; })
-      .text(function(d) { return d.Name; });
+      .text(function(d) { return d.name; });
 
   // tick labels
   vis.selectAll("text.rule")
@@ -236,7 +293,7 @@ function redraw() {
       .attr("y2", hei - padding.bottom);
 
   // empire containers
-  vis.selectAll("g")
+  vis.selectAll("g.barGroup")
     .transition()
       .duration(transitionDuration)
       .style("fill-opacity", function(d) { 
@@ -245,13 +302,68 @@ function redraw() {
       })
       .attr("transform", function(d, i) {
         var tx, ty;
-        if (controls.display == "timeline") tx = scales.years(d.Start);
-        else if (controls.display == "centered") tx = visCenter - (scales.years(d.Peak) - scales.years(d.Start));
-        else tx = padding.left;
+        //timeline modes.
 
-        if (controls.height == "area") ty = d.area_y;
-        else if (controls.height == "population") ty = d.popPercent_y; 
-        else ty = scales.indexes(i);                
+        
+       
+
+        //TimeLine
+        if (controls.display == "timeline") tx = scales.years(d.start);
+        //Peaks
+        else if (controls.display == "centered") tx = visCenter - (scales.years(d.Peak) - scales.years(d.start));
+        
+
+        //Carreer comparsion
+        else {
+          var first = scales.years.ticks()[0];
+          if (d.position=== 0) tx = 0;
+          else if (d.position === 1 ) tx = 
+            //width of the previous
+            (scales.years(d.pre.end)- scales.years(d.pre.start)) +  
+            //distance between previous
+            (scales.years(d.start) - scales.years(d.pre.end))
+          else {
+            
+            
+            
+            tx = d.pre.tx + 
+            //width of the previous
+            (scales.years(d.pre.end)- scales.years(d.pre.start)) +  
+            //distance between previous
+            (scales.years(d.start) - scales.years(d.pre.end))
+          }
+        }
+        
+        
+        
+
+          
+        if (controls.height == "posts") { 
+            //depends on total of type of posts
+            scales.indexes = d3.scale.linear()
+              .domain([ 0,  posts.length - 1 ])
+              .range([ padding.top, hei - padding.bottom - barHeight ]);
+
+          ty = scales.indexes(d.postsPosition);
+        }
+        else {
+          //depends on politicans
+            scales.indexes = d3.scale.linear()
+                .domain([ 0,  data.length - 1 ])
+                .range([ padding.top, hei - padding.bottom - barHeight ]);
+          if (controls.height == "contiguous")  ty = scales.indexes(d.parent);
+          else if (controls.height == "area") ty = d.area_y;
+          else if (controls.height == "population") ty = d.popPercent_y; 
+          else ty = scales.indexes(i);  
+        }
+        
+
+
+        
+
+
+        d.tx = tx;
+        d.ty = ty;
         return "translate(" + tx + ", " + ty + ")"; 
       });
 
@@ -264,6 +376,7 @@ function redraw() {
         else return .75;
       })
       .attr("height", function(d) {
+        if (controls.height == "contiguous") return scales.areas(d.Land_area_million_km2); 
         if (controls.height == "area") return scales.areas(d.Land_area_million_km2); 
         else if (controls.height == "population") return scales.popPercents(d.Percent_World_Population); 
         else return barHeight;
@@ -328,10 +441,10 @@ function showInfoBox(e, i) {
   else {
     var d = data[i];
     
-    var info = "<span class='title'>" + d.Name + "</span>";
+    var info = "<span class='title'>" + d.name + "</span>";
     info += "<br />";
     info += "<img src='" + d.photo + "'>" ;
-    info += "<br />" + formatYear(d.Start) + " - " + formatYear(d.End);
+    info += "<br />" + formatYear(d.start) + " - " + formatYear(d.end);
     if (!isNaN(d.Land_area_million_km2)) info += "<br />" + " Peak (" + formatYear(d.Peak) + "): " + d.Land_area_million_km2 + " million sq km";
     if (!isNaN(d.Estimated_Population)) info += "<br />" + d.Estimated_Population + " million people in " + formatYear(d.Population_Year);
     else info += "<br />" + "no population data available";
@@ -354,7 +467,7 @@ function setControl(elem, con, val, re) {
   $(elem).parents(".controlGroup").find("a").removeClass("active");
   $(elem).addClass("active");
   controls[con] = val;
-  if (re == true) redraw();
+  if (re) redraw();
 }
 
 function parseTransform(s) {
@@ -371,3 +484,6 @@ function formatYear(y) {
   if (y <= 0) return y*-1 + " BCE";
   else return y;
 }
+
+
+function pos(d,j,i) { var a =  j * 10  + (i * d.length);  return a;} // rect position

@@ -9,33 +9,40 @@ rect.bar {
   fill: #2AB991;
   fill-opacity: .75;
 }
+
+
+
+/*http://www.google.com/design/spec/style/color.html#color-color-palette*/
+/* Google suggests using the 500 colors as the primary colors in your app and the other colors as accents colors.*/
+
+
 rect.bar.legislativo,
 rect.bar.Legislativo {
-  fill: #00f;
+  fill: #3F51B5;/*Material Indigo 500*/
 }
 rect.bar.legislativo.nacional{
-  fill: #00f;
+  fill: #3F51B5;/*Material Indigo 500*/
 }
 rect.bar.legislativo.provincial{
-  fill: #005AFF;
+  fill: #7986CB;/*Material Indigo 300*/
 }
 }
-rect.bar.legislativo.provincial.concejal{
-  fill: #0BF;
+rect.bar.legislativo.municipal.concejal{
+  fill: #C5CAE9;/*Material Indigo 100*/
 }
+
 rect.bar.ejecutivo,
 rect.bar.Ejecutivo{
-  fill: #f00;
+  fill: #F44336; /*Material Red 500*/
 }
 rect.bar.ejecutivo.nacional{
-  fill: #F00000;
+  fill: #F44336; /*Material Red 500*/
 }
 rect.bar.ejecutivo.provincial{
-  fill: #F00900;
+  fill: #E57373;/*Material Red 300*/
 }
-rect.bar.provincial.intendente{
-  fill: #F05B00;
-}
+rect.bar.ejecutivo.municipal{
+  fill: #FFCDD2; /*Material Red 100*/
 }
 
 g.barGroup:hover rect.bar {
@@ -64,7 +71,7 @@ line.mouseLine {
 }
 
 #controls {
-  padding: 10px;
+  padding: 4px;
 
 }
 a {

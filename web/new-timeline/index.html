@@ -34,7 +34,7 @@
 <body  ng-controller="DemoCtrl" layout="column">
 
 <div id="controls" layout="row" flex>
-    <div layout="column" flex="20">
+    <div layout="column" flex="15">
       <div>
         <span class="title">Cargografias 3.0</span>
         <md-button class="md-raised md-primary"  ng-click="showAdvanced($event)"> ARG</md-button>
@@ -45,17 +45,35 @@
           <div auto-complete url="/search" model="data.tags"></div>
       </div>
     </div>
-    <div layout="column" flex="30">
-     <div>
-           <span id="layoutControls" class="controlGroup">
-          <a id="layout-timespan" class="active" onclick="javascript:setControl(this, 'display', 'aligned', true); return false;">Periodos</a> |
-          <a id="layout-timeline" onclick="javascript:setControl(this, 'display', 'timeline', true); return false;">Linea</a> |
-          <a id="layout-peakrs" onclick="javascript:setControl(this, 'display', 'centered', true); return false;">Picos</a>
-        </span>
+    <div layout="column" flex="45">
+     <div layout="row">
+          <span id="layoutControls" class="controlGroup">
+          <a id="layout-timespan" class="active" 
+          onclick="javascript:setControl(this, 'display', 'aligned', true); return false;">Carrerimetro</a> |
+          <a id="layout-timeline" 
+          onclick="javascript:setControl(this, 'display', 'timeline', true); return false;">Linea</a> |
+          <a id="layout-peakrs" 
+          onclick="javascript:setControl(this, 'display', 'centered', true); return false;">Picos</a>
+          </span>
+      </div>
+        <div layout="row">
+          <span id="groupControls" class="controlGroup">
+          <a id="group-posts" class="active" 
+          onclick="javascript:setControl(this, 'height', 'posts', true); return false;">Cargos</a> |
+          <a id="group-name" 
+          onclick="javascript:setControl(this, 'height', 'contiguous', true); return false;">Personas</a> 
+          </span>
+      </div>
+    <div layout="row">
         <span id="heightControls" class="controlGroup">
-          <a id="height-fixed" class="active" onclick="javascript:setControl(this, 'height', 'fixed', true); return false;">Normal </a> |
-          <a id="height-area" onclick="javascript:setControl(this, 'height', 'area', true); return false;">Superfice</a> |
-          <a id="height-population" onclick="javascript:setControl(this, 'height', 'population', true); return false;">Poblacion representada</a>
+          <a id="height-fixed" class="active" 
+          onclick="javascript:setControl(this, 'height', 'contiguous', true); return false;">Agrupar </a> |
+          <!-- <a id="height-fixed" class="active" 
+          onclick="javascript:setControl(this, 'height', 'fixed', true); return false;">Normal </a> | -->
+          <a id="height-area" 
+          onclick="javascript:setControl(this, 'height', 'area', true); return false;">Desagrupar</a> |
+<!--           <a id="height-population" 
+          onclick="javascript:setControl(this, 'height', 'population', true); return false;">Poblacion</a> -->
         </span>
       </div>
 </div>
