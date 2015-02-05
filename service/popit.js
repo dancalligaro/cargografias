@@ -60,28 +60,20 @@ function createAndUploadIntance(instanceName, popitUrl){
 	return deferred.promise;
 }
 
-function getBuildStatus(instanceName){
-
-	var deferred = Q.defer();
-	
-	if(currentBuilds[instanceName]){
-		deferred.resolve(currentBuilds[instanceName].status)
-	}else{
-		deferred.resolve( CargoInstance.findOne({ name : instanceName }) );
-	}
-
-	return deferred.promise;	
-}
-
 function getInstanceProgress(instanceName){
 	var deferred = Q.defer();
 
 	console.log( 'here ', instanceName, currentBuilds[instanceName])
 
 	if(currentBuilds[instanceName]){
-		deferred.resolve( currentBuilds[instanceName].progressLog )
+		console.log('resolving')
+		deferred.resolve( {
+			log: currentBuilds[instanceName].progressLog, 
+			status: currentBuilds[instanceName].status
+		} );
 	}else{
-		deferred.resolve( );
+		console.log('empty')
+		deferred.resolve();
 	}
 
 	return deferred.promise;
@@ -121,13 +113,15 @@ function processNext(){
 		if(currentProcessing){
 			processInstance(currentProcessing)
 				.then(function(){
-
+					currentProcessing.status = 'completed';
+					console.log('here it completed - setting status to completed', currentProcessing.status, currentProcessing);
 				})
 				.catch(function(){
 
 				})
 				.finally(function(){
 					console.log('checking if there is a new one')
+					
 					currentProcessing = null;
 					setTimeout(processNext, 100);
 				});			

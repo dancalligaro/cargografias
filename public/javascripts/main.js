@@ -6,14 +6,9 @@ cargoApp.controller('MainCtrl', [
 
 	function ($scope, $http, $timeout){
 
-		var preventWatch = false;
-		var theTo; 
-
 		$scope.sendCreate = function(){
 
-			 if(theTo) $timeout.cancel(theTo);
-
-			 $scope.responseLines = [];
+			$scope.responseLines = [];
 
 			$http.post('/api/create', {
 				name: $scope.cargoName, 
@@ -21,10 +16,8 @@ cargoApp.controller('MainCtrl', [
 			}).then(function(res){
 
 				//Start watching:
-				preventWatch = false;
 				watchResponse($scope.cargoName);
-				theTo = $timeout(function(){ preventWatch = true; }, 180 * 1000);
-
+				
 			}).catch(function(err){
 				alert('error creating');
 			});
@@ -34,10 +27,13 @@ cargoApp.controller('MainCtrl', [
 		function watchResponse(instanceName){
 
 			$http.get('/api/currentbuildstatus/' + instanceName).then(function(res){
+				
 				$scope.responseLines = res.data.log;
-				if( ! preventWatch ){
-					theTo = $timeout(function(){ watchResponse(instanceName); }, 1000);
+				
+				if(res.data.importStatus === 'creating'){
+					$timeout(function(){ watchResponse(instanceName); }, 1000);
 				}
+				
 			});
 
 		}
