@@ -17,8 +17,10 @@ app.use(compression({
   }
 }));
 app.use(express.static(__dirname + '/web'));
+app.use('/peru', express.static(__dirname + '/web'));
 app.disable('etag');
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
+
