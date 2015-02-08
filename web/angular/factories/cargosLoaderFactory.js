@@ -37,7 +37,7 @@ angular.module('cargoApp.factories', [])
                         nombre : removeDiacritics(res.data[i].name),
                         apellido: '',
                         index: i,
-                        image : res.data[i].images ?  res.data[i].images[0].url :'/img/person.png'    // intentando obtener la foto desde el popit!
+                        image : res.data[i].images && res.data[i].images.length > 0 ?  res.data[i].images[0].url :'/img/person.png'    // intentando obtener la foto desde el popit!
                     };
                     res.data[i].image = p.image;
                     window.__cargos_data.personas.push(p)
