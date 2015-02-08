@@ -7,6 +7,9 @@ angular.module('cargoApp.factories', [])
     
     var f = {};
 
+    var instanceName = window.location.pathname.replace(/\/$/, '').replace(/^\//, '');
+    instanceName = instanceName || 'cargografias';
+
     f.load = function($scope,factory,callback, $rootScope){
           //TODO: MOVE TO A PROPER LOADER
             window.__cargos_data = {
@@ -24,7 +27,7 @@ angular.module('cargoApp.factories', [])
               factory.weight = res.data;
             });
 
-            $http.get('/js/datasets/gz/cargografias-persons-popit-dump.json')
+            $http.get('/js/datasets/gz/' + instanceName + '-persons.json')
                .then(function(res){
                 $rootScope.estado = "Personas";
                 factory.persons = res.data;
@@ -43,7 +46,7 @@ angular.module('cargoApp.factories', [])
                   };
               }).then(function(){
 
-                $http.get('/js/datasets/gz/cargografias-memberships-popit-dump.json')
+                $http.get('/js/datasets/gz/' + instanceName + '-memberships.json')
                  .then(function(res){
                   $rootScope.estado = "Puestos";
                   //factory.memberships = res.data;
@@ -67,7 +70,7 @@ angular.module('cargoApp.factories', [])
 
 
                 }).then(function(){
-                  $http.get('/js/datasets/gz/cargografias-organizations-popit-dump.json')
+                  $http.get('/js/datasets/gz/' + instanceName + '-organizations.json')
                     .then(function(res){
                       $rootScope.estado = "Organizaciones";
                       factory.organizations = res.data;
@@ -84,7 +87,7 @@ angular.module('cargoApp.factories', [])
 
                   }).then(function(){
 
-                      $http.get('/js/datasets/gz/cargografias-posts-popit-dump.json')
+                      $http.get('/js/datasets/gz/' + instanceName + '-posts.json')
                       .then(function(res){
                         factory.posts = res.data;
                         $rootScope.estado = "Partidos";
